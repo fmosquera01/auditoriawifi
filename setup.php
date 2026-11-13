@@ -19,7 +19,7 @@ function plugin_init_auditoriawifi(): void
 
     $PLUGIN_HOOKS['csrf_compliant']['auditoriawifi'] = true;
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['auditoriawifi'] = [
-        'plugins' => 'GlpiPlugin\\Auditoriawifi\\Config',
+        'plugins' => GlpiPlugin\\Auditoriawifi\\ConfigPage::class,
     ];
 
     foreach (AssetRegistry::getItemtypes() as $itemtype) {
