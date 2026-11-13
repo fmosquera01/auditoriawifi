@@ -75,4 +75,4 @@ Este plugin no almacenará tokens, no implementará transporte HTTP hacia Telegr
 
 ## Estado
 
-Versión inicial en desarrollo: estructura del plugin, tablas de auditoría, panel de consulta y hooks iniciales para altas/modificaciones de activos y cambios de MAC. La captura de Fields, cambios globales del atributo RADIUS, asociaciones de puertos, reglas configurables de alertas y notificaciones aún requiere completar y validar. No instalar en producción.
+Versión 0.1.1 en desarrollo: estructura del plugin, tablas de auditoría, panel inicial y hooks para altas/modificaciones/eliminaciones de activos, cambios de MAC y asociación/desasociación de puertos. La comparación de SSID mediante Fields está implementada a nivel inicial, pero aún debe validarse en GLPI real. La auditoría de cambios globales del atributo RADIUS, la configuración de alertas, las reglas obligatorias de Mobile y la integración con FML Telegram están pendientes. No instalar en producción.
