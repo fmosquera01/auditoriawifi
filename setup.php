@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
+use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.1');
 
@@ -19,7 +20,7 @@ function plugin_init_auditoriawifi(): void
 
     $PLUGIN_HOOKS['csrf_compliant']['auditoriawifi'] = true;
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['auditoriawifi'] = [
-        'plugins' => GlpiPlugin\\Auditoriawifi\\ConfigPage::class,
+        'plugins' => ConfigPage::class,
     ];
 
     foreach (AssetRegistry::getItemtypes() as $itemtype) {
