@@ -6,7 +6,7 @@ use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
 use GlpiPlugin\Auditoriawifi\ConfigPage;
 
-define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.1');
+define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.2');
 
 require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
@@ -31,6 +31,9 @@ function plugin_init_auditoriawifi(): void
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_DELETE]['auditoriawifi'][$itemtype] = [EventObserver::class, 'preAssetDelete'];
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_PURGE]['auditoriawifi'][$itemtype] = [EventObserver::class, 'preAssetPurge'];
     }
+
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi']['PluginFieldsSsidfielddropdown'] = [EventObserver::class, 'preSsidDropdownUpdate'];
+    $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi']['PluginFieldsSsidfielddropdown'] = [EventObserver::class, 'postSsidDropdownUpdate'];
 
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi']['NetworkPort'] = [EventObserver::class, 'preNetworkPortUpdate'];
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi']['NetworkPort'] = [EventObserver::class, 'postNetworkPortUpdate'];
