@@ -5,7 +5,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
 
-define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.0');
+define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.1');
 
 require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
