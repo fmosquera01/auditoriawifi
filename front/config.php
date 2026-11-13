@@ -47,8 +47,8 @@ if ($DB->tableExists('glpi_plugin_auditoriawifi_events')) {
         echo "<td><code>" . $escape((string) $event['event_key']) . "</code></td>";
         echo "<td>" . $escape((string) $event['itemtype']) . " #" . (int) $event['items_id'] . "</td>";
         echo "<td>" . $escape((string) $event['field_name']) . "</td>";
-        echo "<td>" . $escape(mb_strimwidt$escape((string) ($event['old_value'] ?? ''), 0, 100, '…')) . "</td>";
-        echo "<td>" . $escape(mb_strimwidt$escape((string) ($event['new_value'] ?? ''), 0, 100, '…')) . "</td>";
+        echo "<td>" . $escape(mb_strimwidth((string) ($event['old_value'] ?? ''), 0, 100, '…')) . "</td>";
+        echo "<td>" . $escape(mb_strimwidth((string) ($event['new_value'] ?? ''), 0, 100, '…')) . "</td>";
         echo "</tr>";
     }
     echo "</table></div>";
