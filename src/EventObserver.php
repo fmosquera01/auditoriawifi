@@ -158,23 +158,54 @@ final class EventObserver
             return;
         }
 
+        $oldItemtype = (string) ($before['itemtype'] ?? '');
+        $oldItemsId = (int) ($before['items_id'] ?? 0);
+        $newItemsId = (int) $after['items_id'];
+        $entityId = (int) ((AssetSnapshot::capture($itemtype, $newItemsId)['asset']['entities_id'] ?? 0));
+
+        if ($oldItemsId === 0 || $oldItemtype === '' || $oldItemtype !== $itemtype || $oldItemsId !== $newItemsId) {
+            if (AssetRegistry::isSupported($oldItemtype) && $oldItemsId > 0 && AuditRepository::isEnabled($oldItemtype)) {
+                AuditRepository::record(
+                    'wifi.port.disassociated',
+                    $oldItemtype,
+                    $oldItemsId,
+                    0,
+                    'port',
+                    'networkport',
+                    ['itemtype' => $oldItemtype, 'items_id' => $oldItemsId],
+                    null,
+                    ['networkports_id' => (int) $after['id']]
+                );
+            }
+            AuditRepository::record(
+                'wifi.port.associated',
+                $itemtype,
+                $newItemsId,
+                $entityId,
+                'port',
+                'networkport',
+                null,
+                ['itemtype' => $itemtype, 'items_id' => $newItemsId],
+                ['networkports_id' => (int) $after['id'], 'port_name' => $after['name']]
+            );
+        }
+
         $oldMac = (string) ($before['mac'] ?? '');
         $newMac = (string) ($after['mac'] ?? '');
-        if ($oldMac === $newMac) {
-            return;
+        if ($oldMac !== $newMac) {
+            $event = $oldMac === '' ? 'wifi.mac.added' : ($newMac === '' ? 'wifi.mac.removed' : 'wifi.mac.changed');
+            AuditRepository::record(
+                $event,
+                $itemtype,
+                $newItemsId,
+                $entityId,
+                'mac',
+                'mac',
+                $oldMac,
+                $newMac,
+                ['networkports_id' => (int) $after['id'], 'port_name' => $after['name']]
+            );
         }
-        $event = $oldMac === '' ? 'wifi.mac.added' : ($newMac === '' ? 'wifi.mac.removed' : 'wifi.mac.changed');
-        AuditRepository::record(
-            $event,
-            $itemtype,
-            (int) $after['items_id'],
-            0,
-            'mac',
-            'mac',
-            $oldMac,
-            $newMac,
-            ['networkports_id' => (int) $after['id'], 'port_name' => $after['name']]
-        );
     }
 
     private static function recordPortRemoval(CommonDBTM $port, string $event): void
