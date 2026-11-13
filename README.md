@@ -75,4 +75,4 @@ Este plugin no almacenará tokens, no implementará transporte HTTP hacia Telegr
 
 ## Estado
 
-Inicio del proyecto: definición funcional y catálogo de eventos. La implementación de los hooks se realizará después de verificar los puntos de extensión reales de GLPI 11.0.11 para activos nativos, Asset Definitions, NetworkPorts y Fields.
+Versión inicial en desarrollo: estructura del plugin, tablas de auditoría, panel de consulta y hooks iniciales para altas/modificaciones de activos y cambios de MAC. La captura de Fields, cambios globales del atributo RADIUS, asociaciones de puertos, reglas configurables de alertas y notificaciones aún requiere completar y validar. No instalar en producción.
