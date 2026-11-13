@@ -11,12 +11,13 @@ require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
 require_once __DIR__ . '/src/AssetSnapshot.php';
 require_once __DIR__ . '/src/EventObserver.php';
+require_once __DIR__ . '/src/ConfigPage.php';
 
 function plugin_init_auditoriawifi(): void
 {
     global $PLUGIN_HOOKS;
 
-    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['auditoriawifi'] = true;
+    $PLUGIN_HOOKS['csrf_compliant']['auditoriawifi'] = true;
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['auditoriawifi'] = [
         'plugins' => 'GlpiPlugin\\Auditoriawifi\\Config',
     ];
