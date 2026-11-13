@@ -226,6 +226,137 @@ final class EventObserver
         }
     }
 
+
+    public static function preSsidDropdownUpdate(CommonDBTM $item): void
+    {
+        $id = (int) $item->getID();
+        if ($id <= 0) {
+            return;
+        }
+
+        self::$before[self::key('PluginFieldsSsidfielddropdown', $id)] = [
+            'id' => $id,
+            'name' => (string) ($item->fields['name'] ?? ''),
+            'completename' => (string) ($item->fields['completename'] ?? ''),
+            'comment' => (string) ($item->fields['comment'] ?? ''),
+        ];
+    }
+
+    public static function postSsidDropdownUpdate(CommonDBTM $item): void
+    {
+        global $DB;
+
+        $id = (int) $item->getID();
+        $key = self::key('PluginFieldsSsidfielddropdown', $id);
+        $before = self::$before[$key] ?? [];
+        unset(self::$before[$key]);
+
+        if ($id <= 0 || $before === []) {
+            return;
+        }
+
+        $after = $DB->request([
+            'SELECT' => ['id', 'name', 'completename', 'comment'],
+            'FROM' => 'glpi_plugin_fields_ssidfielddropdowns',
+            'WHERE' => ['id' => $id],
+            'LIMIT' => 1,
+        ])->current();
+
+        if (!$after) {
+            return;
+        }
+
+        $after = [
+            'id' => (int) $after['id'],
+            'name' => (string) ($after['name'] ?? ''),
+            'completename' => (string) ($after['completename'] ?? ''),
+            'comment' => (string) ($after['comment'] ?? ''),
+        ];
+
+        $changedName = $before['name'] !== $after['name']
+            || $before['completename'] !== $after['completename'];
+        $changedRadius = $before['comment'] !== $after['comment'];
+
+        if (!$changedName && !$changedRadius) {
+            return;
+        }
+
+        $relations = [
+            'Computer' => 'glpi_plugin_fields_computerwifis',
+            'Printer' => 'glpi_plugin_fields_printerwifis',
+            'Phone' => 'glpi_plugin_fields_phonewifis',
+            'PluginGenericobjectMobile' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
+        ];
+
+        foreach ($relations as $itemtype => $table) {
+            if (!AssetRegistry::isSupported($itemtype)
+                || !AuditRepository::isEnabled($itemtype)
+                || !$DB->tableExists($table)
+            ) {
+                continue;
+            }
+
+            $criteria = ['plugin_fields_ssidfielddropdowns_id' => $id];
+            if ($itemtype === 'PluginGenericobjectMobile') {
+                $criteria['itemtype'] = $itemtype;
+            }
+
+            $iterator = $DB->request([
+                'SELECT' => ['items_id'],
+                'FROM' => $table,
+                'WHERE' => $criteria,
+            ]);
+
+            foreach ($iterator as $relation) {
+                $itemsId = (int) ($relation['items_id'] ?? 0);
+                if ($itemsId <= 0) {
+                    continue;
+                }
+
+                $snapshot = AssetSnapshot::capture($itemtype, $itemsId);
+                $entitiesId = (int) ($snapshot['asset']['entities_id'] ?? 0);
+
+                if ($changedName) {
+                    AuditRepository::record(
+                        'wifi.ssid.changed',
+                        $itemtype,
+                        $itemsId,
+                        $entitiesId,
+                        'ssid',
+                        'ssid_definition',
+                        [
+                            'name' => $before['name'],
+                            'completename' => $before['completename'],
+                        ],
+                        [
+                            'name' => $after['name'],
+                            'completename' => $after['completename'],
+                        ],
+                        ['ssid_dropdown_id' => $id, 'source' => 'fields_dropdown']
+                    );
+                }
+
+                if ($changedRadius) {
+                    AuditRepository::record(
+                        'wifi.vlan.changed',
+                        $itemtype,
+                        $itemsId,
+                        $entitiesId,
+                        'vlan',
+                        'radius_value',
+                        $before['comment'],
+                        $after['comment'],
+                        [
+                            'ssid_dropdown_id' => $id,
+                            'ssid_name' => $after['completename'] !== '' ? $after['completename'] : $after['name'],
+                            'source' => 'fields_dropdown',
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
     private static function key(string $itemtype, int $id): string
     {
         return $itemtype . ':' . $id;
