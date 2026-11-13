@@ -54,7 +54,7 @@ final class EventObserver
         $key = self::key($itemtype, (int) $item->getID());
         $before = self::$before[$key] ?? [];
         unset(self::$before[$key]);
-        self::recordSnapshotDifferences($itemtype, (int) $item->getID(), $before);
+        self::recordSnapshotDifferences($itemtype, (int) $item->getID(), $before, false);
     }
 
     public static function preAssetDelete(CommonDBTM $item): void
@@ -109,7 +109,7 @@ final class EventObserver
         AuditRepository::record($event, $itemtype, (int) $item->getID(), (int) ($item->fields['entities_id'] ?? 0), 'asset');
     }
 
-    private static function recordSnapshotDifferences(string $itemtype, int $itemsId, array $before): void
+    private static function recordSnapshotDifferences(string $itemtype, int $itemsId, array $before, bool $includePorts = true): void
     {
         $after = AssetSnapshot::capture($itemtype, $itemsId);
         if ($after === []) {
@@ -122,17 +122,20 @@ final class EventObserver
             AuditRepository::record('asset.name.changed', $itemtype, $itemsId, (int) ($newAsset['entities_id'] ?? 0), 'asset', 'name', $oldAsset['name'], $newAsset['name']);
         }
 
-        $oldPorts = $before['ports'] ?? [];
-        $newPorts = $after['ports'] ?? [];
-        foreach (array_unique(array_merge(array_keys($oldPorts), array_keys($newPorts))) as $portId) {
-            $old = $oldPorts[$portId] ?? null;
-            $new = $newPorts[$portId] ?? null;
-            $oldMac = (string) ($old['mac'] ?? '');
-            $newMac = (string) ($new['mac'] ?? '');
-            if ($oldMac !== $newMac) {
-                $event = $oldMac === '' ? 'wifi.mac.added' : ($newMac === '' ? 'wifi.mac.removed' : 'wifi.mac.changed');
-                AuditRepository::record($event, $itemtype, $itemsId, (int) ($newAsset['entities_id'] ?? 0), 'mac', 'mac', $oldMac, $newMac, ['networkports_id' => (int) $portId]);
+        if ($includePorts) {
+            $oldPorts = $before['ports'] ?? [];
+            $newPorts = $after['ports'] ?? [];
+            foreach (array_unique(array_merge(array_keys($oldPorts), array_keys($newPorts))) as $portId) {
+                $old = $oldPorts[$portId] ?? null;
+                $new = $newPorts[$portId] ?? null;
+                $oldMac = (string) ($old['mac'] ?? '');
+                $newMac = (string) ($new['mac'] ?? '');
+                if ($oldMac !== $newMac) {
+                    $event = $oldMac === '' ? 'wifi.mac.added' : ($newMac === '' ? 'wifi.mac.removed' : 'wifi.mac.changed');
+                    AuditRepository::record($event, $itemtype, $itemsId, (int) ($newAsset['entities_id'] ?? 0), 'mac', 'mac', $oldMac, $newMac, ['networkports_id' => (int) $portId]);
+                }
             }
+    
         }
 
         $oldWifi = $before['wifi'] ?? [];
