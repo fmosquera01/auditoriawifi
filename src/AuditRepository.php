@@ -43,7 +43,7 @@ final class AuditRepository
         }
 
         try {
-            $userId = function_exists('Session::getLoginUserID') ? (int) \Session::getLoginUserID() : 0;
+            $userId = class_exists('Session') ? (int) \Session::getLoginUserID() : 0;
             $DB->insert('glpi_plugin_auditoriawifi_events', [
                 'event_key' => $eventKey,
                 'itemtype' => $itemtype,
