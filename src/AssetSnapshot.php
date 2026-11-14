@@ -88,14 +88,14 @@ final class AssetSnapshot
             'Computer' => 'glpi_plugin_fields_computerwifis',
             'Printer' => 'glpi_plugin_fields_printerwifis',
             'Phone' => 'glpi_plugin_fields_phonewifis',
-            'PluginGenericobjectMobile' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
+            'Glpi\\\\CustomAsset\\\\mobileAsset' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
         ];
         if (!isset($tables[$itemtype]) || !$DB->tableExists($tables[$itemtype])) {
             return [];
         }
 
         $criteria = ['items_id' => $itemsId];
-        if ($itemtype === 'PluginGenericobjectMobile') {
+        if ($DB->fieldExists($tables[$itemtype], 'itemtype')) {
             $criteria['itemtype'] = $itemtype;
         }
 
