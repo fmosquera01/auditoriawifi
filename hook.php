@@ -65,10 +65,35 @@ function plugin_auditoriawifi_install(): bool
         }
     }
 
-    // Register plugin rights using GLPI's supported ProfileRight API.
-    foreach (AuditoriaWifiProfile::getAllRights() as $right) {
-        ProfileRight::addProfileRights([$right['field']]);
+    // Register each right only for profiles that do not already have it.
+    // ProfileRight::addProfileRights() inserts for every profile and is not
+    // idempotent; calling it during an upgrade causes duplicate-key failures.
+    foreach ($DB->request([
+        'SELECT' => ['id'],
+        'FROM'   => \\Profile::getTable(),
+    ]) as $profileRow) {
+        $profileId = (int) $profileRow['id'];
+
+        foreach (AuditoriaWifiProfile::getAllRights() as $right) {
+            $existingRight = $DB->request([
+                'SELECT' => ['id'],
+                'FROM'   => ProfileRight::getTable(),
+                'WHERE'  => [
+                    'profiles_id' => $profileId,
+                    'name'        => $right['field'],
+                ],
+                'LIMIT'  => 1,
+            ])->current();
+
+            if (!$existingRight) {
+                $DB->insert(ProfileRight::getTable(), [
+                    'profiles_id' => $profileId,
+                    'name'        => $right['field'],
+                ]);
+            }
+        }
     }
+    ProfileRight::cleanAllPossibleRights();
 
     return true;
 }
