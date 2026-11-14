@@ -1,78 +1,68 @@
 # Auditoría WiFi
 
-Plugin de auditoría de seguridad para GLPI 11 que registra cambios en los activos y en sus autorizaciones de acceso Wi-Fi.
+Plugin de auditoría para GLPI 11 orientado a la trazabilidad de activos que participan en la autenticación Wi-Fi/RADIUS de Songa.
 
-- **Nombre visible:** Auditoría WiFi
-- **Identificador técnico:** `auditoriawifi`
+- **Nombre:** Auditoría WiFi
+- **Identificador:** `auditoriawifi`
 - **Repositorio:** https://github.com/fmosquera01/auditoriawifi
 - **Rama de desarrollo:** `main`
-- **Plataforma objetivo:** GLPI 11.0.11
-- **Integración de notificaciones:** FML Telegram (`telegram`)
+- **Versión actual:** 0.1.7
+- **Dependencia de notificaciones:** FML Telegram (`telegram`)
 
-## Objetivo
+## Activos incluidos
 
-Mantener una trazabilidad independiente de las alertas. Los cambios relevantes se registran en el historial aunque no estén habilitados para notificación. La configuración de alertas permite seleccionar los eventos que deben enviarse a Telegram por tipo de activo.
+El alcance se limita exclusivamente a:
 
-## Tipos de activos cubiertos
+| Nombre | Itemtype GLPI |
+|---|---|
+| Computadoras | `Computer` |
+| Impresoras | `Printer` |
+| Teléfonos | `Phone` |
+| Mobile | `Glpi\\CustomAsset\\mobileAsset` |
 
-1. Computer
-2. Printer
-3. Phone
-4. PluginGenericobjectMobile (Asset Definition Mobile)
+No se auditan otros Asset Definitions.
 
-La auditoría podrá habilitarse o deshabilitarse por tipo de activo. Deshabilitarla no elimina los registros históricos.
+## Auditoría
 
-## Catálogo inicial de eventos
+Los eventos se guardan en el historial independientemente de que estén seleccionados para notificación.
 
-### Activo
-- `asset.created`: creación del activo.
-- `asset.deleted`: eliminación del activo.
+- Activos: creación, cambio de nombre, eliminación y purga.
+- MAC: agregada, modificada o eliminada.
+- Puertos: asociación y desasociación.
+- Wi-Fi: asignación, cambio o retiro de SSID.
+- RADIUS: cambio del valor almacenado en el campo `comment` del desplegable SSID (`wifi.vlan.changed`).
 
-### MAC / puertos
-- `wifi.mac.added`: incorporación de una MAC.
-- `wifi.mac.changed`: modificación de una MAC.
-- `wifi.mac.removed`: eliminación de una MAC.
-- `wifi.port.associated`: asociación de un puerto con un activo.
-- `wifi.port.disassociated`: desasociación de un puerto de un activo.
+La integración con Fields observa el contenedor `wifi` para capturar los valores anterior y nuevo del SSID. El cambio del valor RADIUS del desplegable se audita para los activos relacionados.
 
-### SSID / VLAN
-- `wifi.ssid.added`: asignación de una red Wi-Fi.
-- `wifi.ssid.changed`: cambio de red Wi-Fi.
-- `wifi.ssid.removed`: retiro de la red Wi-Fi.
-- `wifi.vlan.changed`: cambio del atributo RADIUS almacenado en el campo `comment` del desplegable SSID, incluso si su ID no cambia.
+## Configuración de alertas
 
-Los cambios de MAC y SSID se auditan como eventos distintos. Si ambos cambian durante una misma operación, se conservarán ambos detalles y la notificación podrá consolidarlos en un solo mensaje.
+En el panel de Auditoría WiFi se pueden seleccionar los eventos que deben notificarse para cada tipo de activo. Desmarcar una notificación no elimina ni desactiva el registro histórico.
 
-## Fuentes de datos Wi-Fi
+**Regla obligatoria de Mobile:** los eventos `asset.created` y `asset.name.changed` siempre notifican y no pueden desactivarse desde el panel. Los demás eventos de Mobile, incluidos MAC y Wi-Fi, se pueden seleccionar individualmente.
 
-- `glpi_networkports`
-- `glpi_plugin_fields_computerwifis`
-- `glpi_plugin_fields_printerwifis`
-- `glpi_plugin_fields_phonewifis`
-- `glpi_plugin_fields_glpicustomassetmobileassetwifis`
-- `glpi_plugin_fields_ssidfielddropdowns`
+## FML Telegram
 
-La relación Mobile debe filtrarse por `itemtype = 'PluginGenericobjectMobile'` para evitar colisiones de `items_id` entre tipos de activo.
-
-El valor `comment` del desplegable SSID es especialmente importante: es el dato que consume FreeRADIUS para determinar el atributo de red/VLAN. Se auditarán por separado el nombre legible del SSID y el valor RADIUS.
-
-## Notificaciones
-
-Las notificaciones se encolarán exclusivamente mediante la API pública de FML Telegram:
+Las notificaciones se encolan mediante la API pública:
 
 `GlpiPlugin\\Telegram\\NotificationService::enqueue()`
 
-Este plugin no almacenará tokens, no implementará transporte HTTP hacia Telegram y no tendrá una cola de entrega propia. Un fallo de Telegram nunca debe interrumpir una operación de GLPI.
+El plugin no almacena tokens ni realiza llamadas HTTP directas a Telegram. FML Telegram procesa la cola mediante su tarea cron.
 
-## Principios de auditoría
+Para recibir un evento, configura en FML Telegram una suscripción con:
 
-- Registrar quién realizó el cambio, cuándo, sobre qué activo y los valores anterior y nuevo.
-- No generar eventos por estadísticas automáticas de interfaces.
-- No confundir el alta del activo con el alta de una MAC.
-- No confundir auditoría histórica con reglas de notificación.
-- Conservar el historial al desactivar un tipo de activo.
-- Tratar los cambios del atributo RADIUS del desplegable como cambios de seguridad, aunque el activo no se haya editado.
+- **Origen:** `auditoriawifi`
+- **Evento:** la clave exacta, por ejemplo `wifi.ssid.changed`
+- **Destino:** el chat o alias que debe recibirlo.
 
-## Estado
+Se debe crear una suscripción por cada evento que se quiera recibir. Si no existe una suscripción/destino activo, FML Telegram no encolará una entrega. El fallo de notificación nunca debe interrumpir la operación de GLPI.
 
-Versión 0.1.2 en desarrollo: estructura del plugin, tablas de auditoría, panel inicial y hooks para altas/modificaciones/eliminaciones de activos, cambios de MAC y asociación/desasociación de puertos. La comparación de SSID mediante Fields está implementada a nivel inicial, pero aún debe validarse en GLPI real. Se incorporó el hook del desplegable SSID de Fields para auditar cambios globales en `name`/`completename` y `comment`. Cuando cambia `comment`, se registra `wifi.vlan.changed` para cada activo relacionado, incluso si no se modificó el activo. Esta integración aún requiere validación en GLPI real. La configuración de alertas, las reglas obligatorias de Mobile y la integración con FML Telegram siguen pendientes. No instalar en producción.
+## Persistencia
+
+- `glpi_plugin_auditoriawifi_events`: historial de auditoría.
+- `glpi_plugin_auditoriawifi_configs`: estado por activo y selección de alertas (`alerts_json`).
+
+Deshabilitar una alerta no elimina registros históricos. La desinstalación del plugin conserva las tablas y el historial.
+
+## Validación pendiente
+
+Los cambios de SSID ya fueron comprobados por el usuario en Computer y Mobile. La configuración de alertas y el envío a FML Telegram requieren prueba en el GLPI de pruebas antes de desplegar en producción.
