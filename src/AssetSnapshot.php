@@ -84,23 +84,18 @@ final class AssetSnapshot
     {
         global $DB;
 
-        $tables = [
-            'Computer' => 'glpi_plugin_fields_computerwifis',
-            'Printer' => 'glpi_plugin_fields_printerwifis',
-            'Phone' => 'glpi_plugin_fields_phonewifis',
-            'Glpi\\CustomAsset\\mobileAsset' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
-        ];
-        if (!isset($tables[$itemtype]) || !$DB->tableExists($tables[$itemtype])) {
+        $table = self::getWifiFieldsTable($itemtype);
+        if ($table === null || !$DB->tableExists($table)) {
             return [];
         }
 
         $criteria = ['items_id' => $itemsId];
-        if ($DB->fieldExists($tables[$itemtype], 'itemtype')) {
+        if ($DB->fieldExists($table, 'itemtype')) {
             $criteria['itemtype'] = $itemtype;
         }
 
         $row = $DB->request([
-            'FROM' => $tables[$itemtype],
+            'FROM' => $table,
             'WHERE' => $criteria,
             'LIMIT' => 1,
         ])->current();
@@ -126,6 +121,28 @@ final class AssetSnapshot
             'ssid_completename' => (string) ($ssid['completename'] ?? ''),
             'radius_value' => (string) ($ssid['comment'] ?? ''),
         ];
+    }
+
+
+    /**
+     * Resolve the Fields-generated table for the wifi container of any
+     * native or Asset Definition itemtype.
+     */
+    public static function getWifiFieldsTable(string $itemtype): ?string
+    {
+        if (!class_exists('PluginFieldsContainer')) {
+            return null;
+        }
+
+        try {
+            $fieldsClass = \\PluginFieldsContainer::getClassname($itemtype, 'wifi');
+            if (!class_exists($fieldsClass)) {
+                return null;
+            }
+            return getTableForItemType($fieldsClass);
+        } catch (\\Throwable $e) {
+            return null;
+        }
     }
 
     public static function normalizeMac(string $mac): string
