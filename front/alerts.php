@@ -2,13 +2,14 @@
 declare(strict_types=1);
 
 use GlpiPlugin\Auditoriawifi\AssetRegistry;
+use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 include('../../../inc/includes.php');
 
 Session::checkRight('config', READ);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-Html::header(__('Visualizar alertas', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', 'auditoriawifi');
+Html::header(__('Eventos', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', ConfigPage::class, 'events');
 
 echo "<div class='container-fluid'>";
 echo "<h2><i class='ti ti-bell'></i> " . $escape(__('Visualizar alertas', 'auditoriawifi')) . "</h2>";
