@@ -135,12 +135,12 @@ final class AssetSnapshot
         }
 
         try {
-            $fieldsClass = \\PluginFieldsContainer::getClassname($itemtype, 'wifi');
+            $fieldsClass = \PluginFieldsContainer::getClassname($itemtype, 'wifi');
             if (!class_exists($fieldsClass)) {
                 return null;
             }
             return getTableForItemType($fieldsClass);
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
