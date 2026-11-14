@@ -137,20 +137,20 @@ final class AlertManager
         $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
         $subject = '📡 Auditoría Wi-Fi: ' . $assetLabel . ' #' . $itemsId;
         $lines = [
-            '🔐 <b>SONGA | AUDITORÍA WI-FI</b>',
-            '📌 <b>Evento:</b> ' . $eventKey,
-            '🖥️ <b>Activo:</b> ' . $assetLabel . ' #' . $itemsId,
+            '🔐 SONGA | AUDITORÍA WI-FI',
+            '📌 Evento: ' . $eventKey,
+            '🖥️ Activo: ' . $assetLabel . ' #' . $itemsId,
         ];
 
         if ($fieldName !== '') {
-            $lines[] = '🏷️ <b>Campo:</b> ' . $fieldName;
+            $lines[] = '🏷️ Campo: ' . $fieldName;
         }
         if ($oldValue !== null || $newValue !== null) {
-            $lines[] = '⬅️ <b>Anterior:</b> ' . self::formatValue($oldValue);
-            $lines[] = '➡️ <b>Nuevo:</b> ' . self::formatValue($newValue);
+            $lines[] = '⬅️ Anterior: ' . self::formatValue($oldValue);
+            $lines[] = '➡️ Nuevo: ' . self::formatValue($newValue);
         }
         if ($details !== []) {
-            $lines[] = 'ℹ️ <b>Detalle:</b> ' . self::formatValue($details);
+            $lines[] = 'ℹ️ Detalle: ' . self::formatValue($details);
         }
         $lines[] = '🆔 <b>Registro:</b> #' . $eventId;
 
@@ -182,7 +182,7 @@ final class AlertManager
     private static function formatValue(mixed $value): string
     {
         if ($value === null || $value === '') {
-            return '<i>(vacío)</i>';
+            return '(vacío)';
         }
 
         if (is_array($value) || is_object($value)) {
@@ -194,6 +194,6 @@ final class AlertManager
             $text = substr($text, 0, 1197) . '...';
         }
 
-        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return $text;
     }
 }
