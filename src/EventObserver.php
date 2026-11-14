@@ -285,7 +285,7 @@ final class EventObserver
             'Computer' => 'glpi_plugin_fields_computerwifis',
             'Printer' => 'glpi_plugin_fields_printerwifis',
             'Phone' => 'glpi_plugin_fields_phonewifis',
-            'PluginGenericobjectMobile' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
+            'Glpi\\\\CustomAsset\\\\mobileAsset' => 'glpi_plugin_fields_glpicustomassetmobileassetwifis',
         ];
 
         foreach ($relations as $itemtype => $table) {
@@ -297,7 +297,7 @@ final class EventObserver
             }
 
             $criteria = ['plugin_fields_ssidfielddropdowns_id' => $id];
-            if ($itemtype === 'PluginGenericobjectMobile') {
+            if ($DB->fieldExists($table, 'itemtype')) {
                 $criteria['itemtype'] = $itemtype;
             }
 
