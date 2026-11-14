@@ -34,6 +34,7 @@ Html::header(__('Auditoría WiFi', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plug
 echo "<div class='container-fluid'>";
 echo "<h2><i class='ti ti-shield-lock'></i> " . $escape(__('Auditoría WiFi', 'auditoriawifi')) . "</h2>";
 echo "<p>" . $escape(__('Configura qué eventos se notifican por FML Telegram. El registro histórico se conserva independientemente de las notificaciones.', 'auditoriawifi')) . "</p>";
+echo "<div class='alert alert-info'>" . $escape(__('En FML Telegram crea una suscripción con origen auditoriawifi y el evento exacto que quieras recibir (por ejemplo, wifi.ssid.changed).', 'auditoriawifi')) . "</div>";
 
 $catalog = AlertManager::getEventCatalog();
 echo "<form method='post' action='" . $escape($_SERVER['PHP_SELF']) . "'>";
