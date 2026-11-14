@@ -70,7 +70,7 @@ function plugin_auditoriawifi_install(): bool
     // idempotent; calling it during an upgrade causes duplicate-key failures.
     foreach ($DB->request([
         'SELECT' => ['id'],
-        'FROM'   => \\Profile::getTable(),
+        'FROM'   => Profile::getTable(),
     ]) as $profileRow) {
         $profileId = (int) $profileRow['id'];
 
