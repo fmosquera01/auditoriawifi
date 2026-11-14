@@ -151,10 +151,16 @@ final class AlertManager
         }
 
         try {
-            // Keep the integration tied to the documented public API contract.
-            if ($service::getApiVersion() !== '1.0') {
-                throw new \RuntimeException('Unsupported FML Telegram API version.');
+            // FML Telegram API 1.1 supports Telegram-compatible HTML messages.
+            if ($service::getApiVersion() !== '1.1') {
+                throw new \RuntimeException('Unsupported FML Telegram API version; expected 1.1.');
             }
+
+            $html = static fn ($value): string => htmlspecialchars(
+                (string) $value,
+                ENT_QUOTES | ENT_SUBSTITUTE,
+                'UTF-8'
+            );
 
             $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
             $asset = is_array($details['asset'] ?? null) ? $details['asset'] : [];
@@ -164,40 +170,41 @@ final class AlertManager
             $subject = '📡 Auditoría Wi-Fi: ' . $assetTitle;
 
             $lines = [
-                '🔐 SONGA | AUDITORÍA WI-FI',
-                '📌 Evento: ' . $eventKey,
-                '🖥️ Activo: ' . $assetTitle,
-                '🗂️ Tipo: ' . $assetLabel . ' (#' . $itemsId . ')',
+                '<b>🔐 SONGA | AUDITORÍA WI-FI</b>',
+                '<b>📌 Evento:</b> <code>' . $html($eventKey) . '</code>',
+                '<b>🖥️ Activo:</b> ' . $html($assetTitle),
+                '<b>🗂️ Tipo:</b> ' . $html($assetLabel) . ' (#' . $itemsId . ')',
             ];
 
             if ($serial !== '') {
-                $lines[] = '🔢 Serie: ' . $serial;
+                $lines[] = '<b>🔢 Serie:</b> ' . $html($serial);
             }
             $inventory = trim((string) ($asset['otherserial'] ?? ''));
             if ($inventory !== '') {
-                $lines[] = '🏷️ Activo fijo: ' . $inventory;
+                $lines[] = '<b>🏷️ Activo fijo:</b> ' . $html($inventory);
             }
             if ($fieldName !== '') {
-                $lines[] = 'Campo: ' . $fieldName;
+                $lines[] = '<b>Campo:</b> ' . $html($fieldName);
             }
             if ($oldValue !== null || $newValue !== null) {
-                $lines[] = '⬅️ Anterior: ' . self::formatValue($oldValue);
-                $lines[] = '➡️ Nuevo: ' . self::formatValue($newValue);
+                $lines[] = '<b>⬅️ Anterior:</b> ' . $html(self::formatValue($oldValue));
+                $lines[] = '<b>➡️ Nuevo:</b> ' . $html(self::formatValue($newValue));
             }
             if ($details !== []) {
                 $displayDetails = $details;
                 unset($displayDetails['asset']);
                 if ($displayDetails !== []) {
-                    $lines[] = 'ℹ️ Detalle: ' . self::formatValue($displayDetails);
+                    $lines[] = '<b>ℹ️ Detalle:</b> <code>' . $html(self::formatValue($displayDetails)) . '</code>';
                 }
             }
-            $lines[] = 'Registro: #' . $eventId;
+            $lines[] = '<b>Registro:</b> #' . $eventId;
 
             $result = $service::enqueue([
                 'source' => 'auditoriawifi',
                 'event' => $eventKey,
                 'subject' => $subject,
                 'message' => implode("\n", $lines),
+                'parse_mode' => 'HTML',
                 'deduplication_key' => 'auditoriawifi:' . $eventId,
             ]);
 
