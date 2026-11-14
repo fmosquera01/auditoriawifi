@@ -145,7 +145,7 @@ final class AlertManager
         mixed $newValue,
         array $details = []
     ): void {
-        $service = \\GlpiPlugin\\Telegram\\NotificationService::class;
+        $service = \GlpiPlugin\Telegram\NotificationService::class;
         if (!class_exists($service) || !self::shouldNotify($itemtype, $eventKey)) {
             return;
         }
@@ -153,7 +153,7 @@ final class AlertManager
         try {
             // Keep the integration tied to the documented public API contract.
             if ($service::getApiVersion() !== '1.0') {
-                throw new \\RuntimeException('Unsupported FML Telegram API version.');
+                throw new \RuntimeException('Unsupported FML Telegram API version.');
             }
 
             $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
@@ -197,7 +197,7 @@ final class AlertManager
                 'source' => 'auditoriawifi',
                 'event' => $eventKey,
                 'subject' => $subject,
-                'message' => implode("\\n", $lines),
+                'message' => implode("\n", $lines),
                 'deduplication_key' => 'auditoriawifi:' . $eventId,
             ]);
 
@@ -207,15 +207,15 @@ final class AlertManager
                 && !empty($result['errors'])
                 && class_exists('Toolbox')
             ) {
-                \\Toolbox::logError(
+                \Toolbox::logError(
                     'Auditoria WiFi: FML Telegram did not queue notification',
                     implode('; ', $result['errors'])
                 );
             }
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             // Notification delivery must never interrupt GLPI operations.
             if (class_exists('Toolbox')) {
-                \\Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
+                \Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
             }
         }
     }
