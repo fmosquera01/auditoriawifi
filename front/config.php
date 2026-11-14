@@ -31,7 +31,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alert
 Html::header(__('Configuración', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
 
 echo "<div class='container-fluid'>";
-echo "<h2><i class='ti ti-shield-lock'></i> " . $escape(__('Parámetros de alertas', 'auditoriawifi')) . "</h2>";
+echo "<nav aria-label='breadcrumb' class='mb-3'><ol class='breadcrumb'><li class='breadcrumb-item'><a href='/front/central.php'>" . $escape(__('Inicio')) . "</a></li><li class='breadcrumb-item'><a href='/plugins/auditoriawifi/front/home.php'>Auditoría WiFi</a></li><li class='breadcrumb-item active' aria-current='page'>" . $escape(__('Configuración', 'auditoriawifi')) . "</li></ol></nav>";
+echo "<div class='d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3'><h2 class='mb-0'><i class='ti ti-shield-lock'></i> " . $escape(__('Parámetros de alertas', 'auditoriawifi')) . "</h2><div class='d-flex gap-2'><a class='btn btn-outline-secondary' href='/plugins/auditoriawifi/front/home.php'><i class='ti ti-arrow-left'></i> " . $escape(__('Inicio', 'auditoriawifi')) . "</a><a class='btn btn-primary' href='/plugins/auditoriawifi/front/alerts.php'><i class='ti ti-history'></i> " . $escape(__('Ver eventos', 'auditoriawifi')) . "</a></div></div>
 echo "<p>" . $escape(__('Configura qué eventos se notifican por FML Telegram. El registro histórico se conserva independientemente de las notificaciones.', 'auditoriawifi')) . "</p>";
 echo "<div class='alert alert-info'>" . $escape(__('En FML Telegram crea una suscripción con origen auditoriawifi y el evento exacto que quieras recibir (por ejemplo, wifi.ssid.changed).', 'auditoriawifi')) . "</div>";
 
