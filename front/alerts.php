@@ -125,7 +125,7 @@ echo "<script>
         if (button.disabled) return;
         button.disabled = true;
         const original = button.innerHTML;
-        button.innerHTML = '<i class="ti ti-loader-2"></i> Actualizando...';
+        button.textContent = 'Actualizando...';
         try {
             const response = await fetch('/plugins/auditoriawifi/front/alerts.php?ajax=1', {
                 method: 'GET',
