@@ -7,7 +7,7 @@ use CommonGLPI;
 
 final class ConfigPage extends CommonGLPI
 {
-    public static $rightname = 'plugin_auditoriawifi_config';
+    public static $rightname = 'auditoriawifi:config';
     public static function getTypeName($nb = 0): string
     {
         return __('Auditoría WiFi', 'auditoriawifi');
