@@ -26,7 +26,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alert
         false,
         INFO
     );
-    Html::redirect($_SERVER['PHP_SELF']);
+    Html::redirect('/plugins/auditoriawifi/front/config.php');
 }
 
 Html::header(__('Auditoría WiFi', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', 'auditoriawifi');
@@ -37,7 +37,7 @@ echo "<p>" . $escape(__('Configura qué eventos se notifican por FML Telegram. E
 echo "<div class='alert alert-info'>" . $escape(__('En FML Telegram crea una suscripción con origen auditoriawifi y el evento exacto que quieras recibir (por ejemplo, wifi.ssid.changed).', 'auditoriawifi')) . "</div>";
 
 $catalog = AlertManager::getEventCatalog();
-echo "<form method='post' action='" . $escape($_SERVER['PHP_SELF']) . "'>";
+echo "<form method='post' action='" . "/plugins/auditoriawifi/front/config.php'>";
 echo "<input type='hidden' name='_glpi_csrf_token' value='" . $escape(Session::getNewCSRFToken()) . "'>";
 
 echo "<div class='table-responsive'><table class='tab_cadre_fixehov'>";
@@ -95,29 +95,6 @@ echo "<div class='d-flex justify-content-end mb-4'>";
 echo "<button type='submit' class='btn btn-primary' name='save_alerts' value='1'><i class='ti ti-device-floppy'></i> " . $escape(__('Guardar configuración', 'auditoriawifi')) . "</button>";
 echo "</div></form>";
 
-echo "<h3>" . $escape(__('Últimos eventos registrados', 'auditoriawifi')) . "</h3>";
-global $DB;
-if ($DB->tableExists('glpi_plugin_auditoriawifi_events')) {
-    $iterator = $DB->request([
-        'FROM' => 'glpi_plugin_auditoriawifi_events',
-        'ORDER' => ['date_creation DESC', 'id DESC'],
-        'LIMIT' => 50,
-    ]);
-    echo "<div class='table-responsive'><table class='tab_cadre_fixehov'>";
-    echo "<tr><th>ID</th><th>" . $escape(__('Fecha', 'auditoriawifi')) . "</th><th>" . $escape(__('Evento', 'auditoriawifi')) . "</th><th>" . $escape(__('Activo', 'auditoriawifi')) . "</th><th>" . $escape(__('Campo', 'auditoriawifi')) . "</th><th>" . $escape(__('Anterior', 'auditoriawifi')) . "</th><th>" . $escape(__('Nuevo', 'auditoriawifi')) . "</th></tr>";
-    foreach ($iterator as $event) {
-        echo "<tr>";
-        echo "<td>" . (int) $event['id'] . "</td>";
-        echo "<td>" . $escape((string) $event['date_creation']) . "</td>";
-        echo "<td><code>" . $escape((string) $event['event_key']) . "</code></td>";
-        echo "<td>" . $escape((string) $event['itemtype']) . " #" . (int) $event['items_id'] . "</td>";
-        echo "<td>" . $escape((string) $event['field_name']) . "</td>";
-        echo "<td>" . $escape(mb_strimwidth((string) ($event['old_value'] ?? ''), 0, 100, '…')) . "</td>";
-        echo "<td>" . $escape(mb_strimwidth((string) ($event['new_value'] ?? ''), 0, 100, '…')) . "</td>";
-        echo "</tr>";
-    }
-    echo "</table></div>";
-}
 
 echo "</div>";
 Html::footer();
