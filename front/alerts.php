@@ -6,14 +6,14 @@ use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 include('../../../inc/includes.php');
 
-Session::checkRight('config', READ);
+Session::checkRight('plugin_auditoriawifi_events', READ);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 Html::header(__('Eventos', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
 
 echo "<div class='container-fluid'>";
 echo "<nav aria-label='breadcrumb' class='mb-3'><ol class='breadcrumb'><li class='breadcrumb-item'><a href='/front/central.php'>" . $escape(__('Inicio')) . "</a></li><li class='breadcrumb-item'>Complementos</li><li class='breadcrumb-item'><a href='/plugins/auditoriawifi/front/home.php'>Auditoría WiFi</a></li><li class='breadcrumb-item active' aria-current='page'>" . $escape(__('Eventos', 'auditoriawifi')) . "</li></ol></nav>";
-echo "<div class='d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3'><h2 class='mb-0'><i class='ti ti-bell'></i> " . $escape(__('Visualizar alertas', 'auditoriawifi')) . "</h2><div class='d-flex gap-2'><a class='btn btn-outline-secondary' href='/plugins/auditoriawifi/front/home.php'><i class='ti ti-arrow-left'></i> " . $escape(__('Inicio', 'auditoriawifi')) . "</a><a class='btn btn-primary' href='/plugins/auditoriawifi/front/config.php'><i class='ti ti-settings'></i> " . $escape(__('Configuración', 'auditoriawifi')) . "</a></div></div>";
+echo "<div class='d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3'><h2 class='mb-0'><i class='ti ti-bell'></i> " . $escape(__('Visualizar alertas', 'auditoriawifi')) . "</h2><div class='d-flex gap-2'><a class='btn btn-outline-secondary' href='/plugins/auditoriawifi/front/home.php'><i class='ti ti-arrow-left'></i> " . $escape(__('Volver al inicio', 'auditoriawifi')) . "</a><a class='btn btn-primary' href='/plugins/auditoriawifi/front/config.php'><i class='ti ti-settings'></i> " . $escape(__('Volver a configuración', 'auditoriawifi')) . "</a></div></div>";
 echo "<p>" . $escape(__('Historial de eventos detectados por Auditoría WiFi. La selección de qué eventos generan notificaciones se modifica en Parámetros.', 'auditoriawifi')) . "</p>";
 
 global $DB;
