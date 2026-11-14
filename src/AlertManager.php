@@ -5,7 +5,7 @@ namespace GlpiPlugin\Auditoriawifi;
 
 final class AlertManager
 {
-    private const MOBILE = 'Glpi\\CustomAsset\\mobileAsset';
+    private const MOBILE = 'Glpi\CustomAsset\mobileAsset';
 
     /** @return array<string, array<string, string>> */
     public static function getEventCatalog(): array
@@ -128,7 +128,7 @@ final class AlertManager
         array $details = []
     ): void {
         if (
-            !class_exists(\GlpiPlugin\\Telegram\\NotificationService::class)
+            !class_exists(\GlpiPlugin\Telegram\NotificationService::class)
             || !self::shouldNotify($itemtype, $eventKey)
         ) {
             return;
@@ -155,7 +155,7 @@ final class AlertManager
         $lines[] = '🆔 <b>Registro:</b> #' . $eventId;
 
         try {
-            \GlpiPlugin\\Telegram\\NotificationService::enqueue([
+            \GlpiPlugin\Telegram\NotificationService::enqueue([
                 'source' => 'auditoriawifi',
                 'event' => $eventKey,
                 'subject' => $subject,
