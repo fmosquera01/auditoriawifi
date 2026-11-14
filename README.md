@@ -18,7 +18,7 @@ El alcance se limita exclusivamente a:
 | Computadoras | `Computer` |
 | Impresoras | `Printer` |
 | Teléfonos | `Phone` |
-| Mobile | `Glpi\\CustomAsset\\mobileAsset` |
+| Mobile | `Glpi\CustomAsset\mobileAsset` |
 
 No se auditan otros Asset Definitions.
 
@@ -44,7 +44,7 @@ En el panel de Auditoría WiFi se pueden seleccionar los eventos que deben notif
 
 Las notificaciones se encolan mediante la API pública:
 
-`GlpiPlugin\\Telegram\\NotificationService::enqueue()`
+`GlpiPlugin\Telegram\NotificationService::enqueue()`
 
 El plugin no almacena tokens ni realiza llamadas HTTP directas a Telegram. FML Telegram procesa la cola mediante su tarea cron.
 
