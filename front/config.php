@@ -4,6 +4,7 @@ declare(strict_types=1);
 use GlpiPlugin\Auditoriawifi\AlertManager;
 use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\AuditRepository;
+use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 include('../../../inc/includes.php');
 
@@ -11,8 +12,6 @@ Session::checkRight('config', UPDATE);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alerts'])) {
-    Session::checkCSRF($_POST);
-
     $submitted = is_array($_POST['alerts'] ?? null) ? $_POST['alerts'] : [];
     $auditEnabled = is_array($_POST['audit_enabled'] ?? null) ? $_POST['audit_enabled'] : [];
     foreach (AssetRegistry::getItemtypes() as $itemtype) {
@@ -29,7 +28,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alert
     Html::redirect('/plugins/auditoriawifi/front/config.php');
 }
 
-Html::header(__('Parámetros de alertas', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', 'auditoriawifi');
+Html::header(__('Configuración', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', ConfigPage::class, 'config');
 
 echo "<div class='container-fluid'>";
 echo "<h2><i class='ti ti-shield-lock'></i> " . $escape(__('Parámetros de alertas', 'auditoriawifi')) . "</h2>";
