@@ -15,9 +15,9 @@ final class AssetRegistry
         global $CFG_GLPI;
 
         $assets = [
-            Computer::class => 'Computadoras',
-            Printer::class => 'Impresoras',
-            Phone::class => 'Teléfonos',
+            \Computer::class => 'Computadoras',
+            \Printer::class => 'Impresoras',
+            \Phone::class => 'Teléfonos',
         ];
 
         // Asset Definitions generate their real PHP itemtypes dynamically.
