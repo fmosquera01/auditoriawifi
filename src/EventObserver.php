@@ -227,6 +227,119 @@ final class EventObserver
     }
 
 
+
+    /**
+     * Fields persists custom container values through a generated CommonDBTM
+     * class, not through the parent asset update. Capture the old value here.
+     */
+    public static function preFieldsWifiUpdate(CommonDBTM $item): void
+    {
+        $id = (int) $item->getID();
+        if ($id <= 0) {
+            return;
+        }
+
+        self::$before[self::key($item::class, $id)] = [
+            'items_id' => (int) ($item->fields['items_id'] ?? $item->input['items_id'] ?? 0),
+            'dropdown_id' => (int) ($item->fields['plugin_fields_ssidfielddropdowns_id'] ?? 0),
+        ];
+    }
+
+    /**
+     * Fields invokes update() on its generated wifi class. This hook runs
+     * after that row has been persisted, so the comparison is independent
+     * of the parent asset hook execution order.
+     */
+    public static function postFieldsWifiUpdate(CommonDBTM $item): void
+    {
+        $id = (int) $item->getID();
+        $key = self::key($item::class, $id);
+        $before = self::$before[$key] ?? [];
+        unset(self::$before[$key]);
+
+        $itemtype = self::getAssetItemtypeForFieldsClass($item::class);
+        $itemsId = (int) ($item->fields['items_id'] ?? $before['items_id'] ?? 0);
+        if (
+            $id <= 0
+            || $before === []
+            || $itemtype === null
+            || $itemsId <= 0
+            || !AuditRepository::isEnabled($itemtype)
+        ) {
+            return;
+        }
+
+        $oldId = (int) ($before['dropdown_id'] ?? 0);
+        $newId = (int) ($item->fields['plugin_fields_ssidfielddropdowns_id'] ?? 0);
+        if ($oldId === $newId) {
+            return;
+        }
+
+        $asset = AssetSnapshot::capture($itemtype, $itemsId);
+        $entitiesId = (int) ($asset['asset']['entities_id'] ?? 0);
+        $oldValue = self::getSsidDropdownValue($oldId);
+        $newValue = self::getSsidDropdownValue($newId);
+        $event = $oldId === 0 ? 'wifi.ssid.added' : ($newId === 0 ? 'wifi.ssid.removed' : 'wifi.ssid.changed');
+
+        AuditRepository::record(
+            $event,
+            $itemtype,
+            $itemsId,
+            $entitiesId,
+            'ssid',
+            'ssid',
+            $oldValue,
+            $newValue,
+            [
+                'source' => 'fields_container',
+                'fields_record_id' => $id,
+                'fields_class' => $item::class,
+            ]
+        );
+    }
+
+    private static function getAssetItemtypeForFieldsClass(string $fieldsClass): ?string
+    {
+        if (!class_exists('PluginFieldsContainer')) {
+            return null;
+        }
+
+        foreach (AssetRegistry::getItemtypes() as $itemtype) {
+            try {
+                if (\\PluginFieldsContainer::getClassname($itemtype, 'wifi') === $fieldsClass) {
+                    return $itemtype;
+                }
+            } catch (\\Throwable $e) {
+                continue;
+            }
+        }
+
+        return null;
+    }
+
+    private static function getSsidDropdownValue(int $dropdownId): array
+    {
+        global $DB;
+
+        if ($dropdownId <= 0 || !$DB->tableExists('glpi_plugin_fields_ssidfielddropdowns')) {
+            return ['id' => 0, 'name' => '', 'completename' => '', 'radius_value' => ''];
+        }
+
+        $row = $DB->request([
+            'SELECT' => ['id', 'name', 'completename', 'comment'],
+            'FROM' => 'glpi_plugin_fields_ssidfielddropdowns',
+            'WHERE' => ['id' => $dropdownId],
+            'LIMIT' => 1,
+        ])->current();
+
+        return [
+            'id' => (int) ($row['id'] ?? 0),
+            'name' => (string) ($row['name'] ?? ''),
+            'completename' => (string) ($row['completename'] ?? ''),
+            'radius_value' => (string) ($row['comment'] ?? ''),
+        ];
+    }
+
     public static function preSsidDropdownUpdate(CommonDBTM $item): void
     {
         $id = (int) $item->getID();
