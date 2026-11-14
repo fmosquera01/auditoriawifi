@@ -87,9 +87,7 @@ final class AuditRepository
             }
         } catch (Throwable $e) {
             // Auditing must never block the GLPI transaction.
-            if (class_exists('Toolbox')) {
-                \Toolbox::logError('Auditoria WiFi: unable to persist audit event', $e->getMessage());
-            }
+            error_log('[Auditoria WiFi] Unable to persist audit event: ' . $e->getMessage());
         }
     }
 
