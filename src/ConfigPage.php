@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace GlpiPlugin\\Auditoriawifi;
+namespace GlpiPlugin\Auditoriawifi;
 
 use CommonGLPI;
 
