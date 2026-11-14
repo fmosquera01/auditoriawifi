@@ -6,7 +6,7 @@ use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 include('../../../inc/includes.php');
 
-Session::checkRight('plugin_auditoriawifi_events', READ);
+Session::checkRight('auditoriawifi:events', READ);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 Html::header(__('Eventos', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
