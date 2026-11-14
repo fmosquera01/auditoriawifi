@@ -6,7 +6,7 @@ use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
 use GlpiPlugin\Auditoriawifi\ConfigPage;
 
-define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.4');
+define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.5');
 
 require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
@@ -38,6 +38,7 @@ function plugin_init_auditoriawifi(): void
         foreach (AssetRegistry::getItemtypes() as $itemtype) {
             try {
                 $fieldsClass = \PluginFieldsContainer::getClassname($itemtype, 'wifi');
+                $PLUGIN_HOOKS[Hooks::ITEM_ADD]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'postFieldsWifiAdd'];
                 $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'preFieldsWifiUpdate'];
                 $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'postFieldsWifiUpdate'];
             } catch (\Throwable $e) {
