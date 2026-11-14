@@ -14,9 +14,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alert
     Session::checkCSRFToken();
 
     $submitted = is_array($_POST['alerts'] ?? null) ? $_POST['alerts'] : [];
+    $auditEnabled = is_array($_POST['audit_enabled'] ?? null) ? $_POST['audit_enabled'] : [];
     foreach (AssetRegistry::getItemtypes() as $itemtype) {
         $events = $submitted[$itemtype] ?? [];
         AlertManager::saveSelectedEvents($itemtype, is_array($events) ? $events : []);
+        AlertManager::saveAuditEnabled($itemtype, isset($auditEnabled[$itemtype]) && (string) $auditEnabled[$itemtype] === '1');
     }
 
     Session::addMessageAfterRedirect(
@@ -41,10 +43,15 @@ echo "<div class='table-responsive'><table class='tab_cadre_fixehov'>";
 echo "<tr><th>" . $escape(__('Tipo de activo', 'auditoriawifi')) . "</th><th>" . $escape(__('Tipo GLPI', 'auditoriawifi')) . "</th><th>" . $escape(__('Auditoría', 'auditoriawifi')) . "</th></tr>";
 foreach (AssetRegistry::getAssets() as $itemtype => $label) {
     $enabled = AuditRepository::isEnabled($itemtype);
+    $mandatoryAsset = $itemtype === 'Glpi\\CustomAsset\\mobileAsset';
     echo "<tr><td>" . $escape($label) . "</td><td><code>" . $escape($itemtype) . "</code></td><td>";
-    echo $enabled
-        ? "<span class='badge bg-success'>" . $escape(__('Activa', 'auditoriawifi')) . "</span>"
-        : "<span class='badge bg-secondary'>" . $escape(__('Inactiva', 'auditoriawifi')) . "</span>";
+    echo "<input class='form-check-input' type='checkbox' name='audit_enabled[" . $escape($itemtype) . "]' value='1'";
+    echo $enabled || $mandatoryAsset ? " checked" : "";
+    echo $mandatoryAsset ? " disabled" : "";
+    echo ">";
+    if ($mandatoryAsset) {
+        echo " <span class='badge bg-info'>" . $escape(__('Obligatoria', 'auditoriawifi')) . "</span>";
+    }
     echo "</td></tr>";
 }
 echo "</table></div>";
