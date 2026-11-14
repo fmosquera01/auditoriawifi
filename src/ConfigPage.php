@@ -26,22 +26,20 @@ final class ConfigPage extends CommonGLPI
             'title' => self::getMenuName(),
             'page' => $configPage,
             'icon' => 'ti ti-shield-lock',
+            // Custom link keys are rendered by GLPI in the contextual bar.
+            // The built-in "search" key is intentionally hidden by GLPI.
+            'links' => [
+                __('Configurar parámetros', 'auditoriawifi') => $configPage,
+                __('Ver eventos', 'auditoriawifi') => $eventsPage,
+            ],
             'options' => [
                 'config' => [
                     'title' => __('Configuración', 'auditoriawifi'),
                     'page' => $configPage,
-                    'icon' => 'ti ti-settings',
-                    'links' => [
-                        'search' => $configPage,
-                    ],
                 ],
                 'events' => [
                     'title' => __('Eventos', 'auditoriawifi'),
                     'page' => $eventsPage,
-                    'icon' => 'ti ti-list-check',
-                    'links' => [
-                        'search' => $eventsPage,
-                    ],
                 ],
             ],
         ];
