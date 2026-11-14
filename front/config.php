@@ -11,7 +11,7 @@ Session::checkRight('config', UPDATE);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alerts'])) {
-    Session::checkCSRFToken();
+    Session::checkCSRF($_POST);
 
     $submitted = is_array($_POST['alerts'] ?? null) ? $_POST['alerts'] : [];
     $auditEnabled = is_array($_POST['audit_enabled'] ?? null) ? $_POST['audit_enabled'] : [];
