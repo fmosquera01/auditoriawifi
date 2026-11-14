@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use GlpiPlugin\Auditoriawifi\AuditRepository;
+use GlpiPlugin\Auditoriawifi\Profile as AuditoriaWifiProfile;
 
 function plugin_auditoriawifi_install(): bool
 {
@@ -64,21 +65,10 @@ function plugin_auditoriawifi_install(): bool
         }
     }
 
-    // Register Auditoría WiFi rights for every existing GLPI profile.
-    $rights = ['plugin_auditoriawifi_config', 'plugin_auditoriawifi_events'];
-    foreach ($DB->request(['SELECT' => ['id'], 'FROM' => Profile::getTable()]) as $profile) {
-        $profilesId = (int) $profile['id'];
-        $existingRights = ProfileRight::getProfileRights($profilesId, $rights);
-        foreach ($rights as $rightName) {
-            if (!array_key_exists($rightName, $existingRights)) {
-                $DB->insert(ProfileRight::getTable(), [
-                    'profiles_id' => $profilesId,
-                    'name' => $rightName,
-                ]);
-            }
-        }
+    // Register plugin rights using GLPI's supported ProfileRight API.
+    foreach (AuditoriaWifiProfile::getAllRights() as $right) {
+        ProfileRight::addProfileRights([$right['field']]);
     }
-    ProfileRight::cleanAllPossibleRights();
 
     return true;
 }
@@ -101,14 +91,12 @@ function plugin_auditoriawifi_uninstall(): bool
 
     foreach (['glpi_plugin_auditoriawifi_events', 'glpi_plugin_auditoriawifi_configs'] as $table) {
         if ($DB->tableExists($table)) {
-            $DB->query("DROP TABLE IF EXISTS `{$table}`");
+            $DB->doQuery("DROP TABLE IF EXISTS `{$table}`");
         }
     }
 
-    if ($DB->tableExists(ProfileRight::getTable())) {
-        $DB->delete(ProfileRight::getTable(), [
-            'name' => ['plugin_auditoriawifi_config', 'plugin_auditoriawifi_events'],
-        ]);
+    foreach (AuditoriaWifiProfile::getAllRights() as $right) {
+        ProfileRight::deleteProfileRights([$right['field']]);
     }
 
     return true;
