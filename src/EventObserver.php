@@ -306,10 +306,10 @@ final class EventObserver
 
         foreach (AssetRegistry::getItemtypes() as $itemtype) {
             try {
-                if (\\PluginFieldsContainer::getClassname($itemtype, 'wifi') === $fieldsClass) {
+                if (\PluginFieldsContainer::getClassname($itemtype, 'wifi') === $fieldsClass) {
                     return $itemtype;
                 }
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 continue;
             }
         }
