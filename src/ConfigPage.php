@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace GlpiPlugin\Auditoriawifi;
+namespace GlpiPlugin\\Auditoriawifi;
 
 use CommonGLPI;
 
@@ -19,20 +19,29 @@ final class ConfigPage extends CommonGLPI
 
     public static function getMenuContent(): array
     {
+        $configPage = '/plugins/auditoriawifi/front/config.php';
+        $eventsPage = '/plugins/auditoriawifi/front/alerts.php';
+
         return [
             'title' => self::getMenuName(),
-            'page' => '/plugins/auditoriawifi/front/config.php',
+            'page' => $configPage,
             'icon' => 'ti ti-shield-lock',
             'options' => [
-                'alerts' => [
-                    'title' => __('Visualizar alertas', 'auditoriawifi'),
-                    'page' => '/plugins/auditoriawifi/front/alerts.php',
-                    'icon' => 'ti ti-bell',
-                ],
                 'config' => [
-                    'title' => __('Parámetros', 'auditoriawifi'),
-                    'page' => '/plugins/auditoriawifi/front/config.php',
+                    'title' => __('Configuración', 'auditoriawifi'),
+                    'page' => $configPage,
                     'icon' => 'ti ti-settings',
+                    'links' => [
+                        'search' => $configPage,
+                    ],
+                ],
+                'events' => [
+                    'title' => __('Eventos', 'auditoriawifi'),
+                    'page' => $eventsPage,
+                    'icon' => 'ti ti-list-check',
+                    'links' => [
+                        'search' => $eventsPage,
+                    ],
                 ],
             ],
         ];
