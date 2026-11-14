@@ -257,20 +257,29 @@ final class EventObserver
         $before = self::$before[$key] ?? [];
         unset(self::$before[$key]);
 
+        global $DB;
+
         $itemtype = self::getAssetItemtypeForFieldsClass($item::class);
-        $itemsId = (int) ($item->fields['items_id'] ?? $before['items_id'] ?? 0);
-        if (
-            $id <= 0
-            || $before === []
-            || $itemtype === null
-            || $itemsId <= 0
-            || !AuditRepository::isEnabled($itemtype)
-        ) {
+        if ($id <= 0 || $before === [] || $itemtype === null) {
+            return;
+        }
+
+        // Read the persisted row instead of relying on the in-memory object.
+        $table = getTableForItemType($item::class);
+        $row = $DB->request([
+            'SELECT' => ['items_id', 'plugin_fields_ssidfielddropdowns_id'],
+            'FROM' => $table,
+            'WHERE' => ['id' => $id],
+            'LIMIT' => 1,
+        ])->current();
+
+        $itemsId = (int) ($row['items_id'] ?? $before['items_id'] ?? 0);
+        if ($itemsId <= 0 || !AuditRepository::isEnabled($itemtype)) {
             return;
         }
 
         $oldId = (int) ($before['dropdown_id'] ?? 0);
-        $newId = (int) ($item->fields['plugin_fields_ssidfielddropdowns_id'] ?? 0);
+        $newId = (int) ($row['plugin_fields_ssidfielddropdowns_id'] ?? 0);
         if ($oldId === $newId) {
             return;
         }
