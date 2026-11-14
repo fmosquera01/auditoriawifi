@@ -13,6 +13,14 @@ final class ConfigPage extends CommonGLPI
         return __('Auditoría WiFi', 'auditoriawifi');
     }
 
+    public function getRights($interface = 'central'): array
+    {
+        return [
+            READ   => __('Read'),
+            UPDATE => __('Update'),
+        ];
+    }
+
     public static function getMenuName($nb = 0): string
     {
         return __('Auditoría WiFi', 'auditoriawifi');
