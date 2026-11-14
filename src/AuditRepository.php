@@ -44,7 +44,7 @@ final class AuditRepository
 
         try {
             $userId = class_exists('Session') ? (int) \Session::getLoginUserID() : 0;
-            $DB->insert('glpi_plugin_auditoriawifi_events', [
+            $eventId = (int) $DB->insert('glpi_plugin_auditoriawifi_events', [
                 'event_key' => $eventKey,
                 'itemtype' => $itemtype,
                 'items_id' => $itemsId,
@@ -56,6 +56,19 @@ final class AuditRepository
                 'details_json' => json_encode($details, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'users_id' => $userId,
             ]);
+
+            if ($eventId > 0) {
+                AlertManager::dispatch(
+                    $eventId,
+                    $eventKey,
+                    $itemtype,
+                    $itemsId,
+                    $fieldName,
+                    $oldValue,
+                    $newValue,
+                    $details
+                );
+            }
         } catch (Throwable $e) {
             // Auditing must never block the GLPI transaction.
             if (class_exists('Toolbox')) {
