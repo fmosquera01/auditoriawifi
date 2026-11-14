@@ -229,6 +229,77 @@ final class EventObserver
 
 
     /**
+     * Capture a first Fields wifi-container row for an existing asset.
+     */
+    public static function preFieldsWifiAdd(CommonDBTM $item): void
+    {
+        $itemsId = (int) ($item->input['items_id'] ?? $item->fields['items_id'] ?? 0);
+        if ($itemsId <= 0) {
+            return;
+        }
+
+        self::$before[self::key($item::class, -$itemsId)] = [
+            'items_id' => $itemsId,
+            'dropdown_id' => 0,
+        ];
+    }
+
+    /**
+     * Record the first SSID assignment after Fields creates its container row.
+     */
+    public static function postFieldsWifiAdd(CommonDBTM $item): void
+    {
+        global $DB;
+
+        $id = (int) $item->getID();
+        if ($id <= 0) {
+            return;
+        }
+
+        $table = getTableForItemType($item::class);
+        if (!$DB->tableExists($table)) {
+            return;
+        }
+
+        $row = $DB->request([
+            'SELECT' => ['items_id', 'plugin_fields_ssidfielddropdowns_id'],
+            'FROM' => $table,
+            'WHERE' => ['id' => $id],
+            'LIMIT' => 1,
+        ])->current();
+
+        if (!$row) {
+            return;
+        }
+
+        $itemsId = (int) ($row['items_id'] ?? 0);
+        $newId = (int) ($row['plugin_fields_ssidfielddropdowns_id'] ?? 0);
+        $itemtype = self::getAssetItemtypeForFieldsClass($item::class);
+        if ($itemsId <= 0 || $newId <= 0 || $itemtype === null || !AuditRepository::isEnabled($itemtype)) {
+            return;
+        }
+
+        $asset = AssetSnapshot::capture($itemtype, $itemsId);
+        $entitiesId = (int) ($asset['asset']['entities_id'] ?? 0);
+
+        AuditRepository::record(
+            'wifi.ssid.added',
+            $itemtype,
+            $itemsId,
+            $entitiesId,
+            'ssid',
+            'ssid',
+            self::getSsidDropdownValue(0),
+            self::getSsidDropdownValue($newId),
+            [
+                'source' => 'fields_container_add',
+                'fields_record_id' => $id,
+                'fields_class' => $item::class,
+            ]
+        );
+    }
+
+    /**
      * Fields persists custom container values through a generated CommonDBTM
      * class, not through the parent asset update. Capture the old value here.
      */
