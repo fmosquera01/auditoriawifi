@@ -145,45 +145,77 @@ final class AlertManager
         mixed $newValue,
         array $details = []
     ): void {
-        if (
-            !class_exists(\GlpiPlugin\Telegram\NotificationService::class)
-            || !self::shouldNotify($itemtype, $eventKey)
-        ) {
+        $service = \\GlpiPlugin\\Telegram\\NotificationService::class;
+        if (!class_exists($service) || !self::shouldNotify($itemtype, $eventKey)) {
             return;
         }
 
-        $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
-        $subject = '📡 Auditoría Wi-Fi: ' . $assetLabel . ' #' . $itemsId;
-        $lines = [
-            '🔐 SONGA | AUDITORÍA WI-FI',
-            '📌 Evento: ' . $eventKey,
-            '🖥️ Activo: ' . $assetLabel . ' #' . $itemsId,
-        ];
-
-        if ($fieldName !== '') {
-            $lines[] = '🏷️ Campo: ' . $fieldName;
-        }
-        if ($oldValue !== null || $newValue !== null) {
-            $lines[] = '⬅️ Anterior: ' . self::formatValue($oldValue);
-            $lines[] = '➡️ Nuevo: ' . self::formatValue($newValue);
-        }
-        if ($details !== []) {
-            $lines[] = 'ℹ️ Detalle: ' . self::formatValue($details);
-        }
-        $lines[] = '🆔 <b>Registro:</b> #' . $eventId;
-
         try {
-            \GlpiPlugin\Telegram\NotificationService::enqueue([
+            // Keep the integration tied to the documented public API contract.
+            if ($service::getApiVersion() !== '1.0') {
+                throw new \\RuntimeException('Unsupported FML Telegram API version.');
+            }
+
+            $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
+            $asset = is_array($details['asset'] ?? null) ? $details['asset'] : [];
+            $assetName = trim((string) ($asset['name'] ?? ''));
+            $serial = trim((string) ($asset['serial'] ?? ''));
+            $assetTitle = $assetName !== '' ? $assetName : $assetLabel . ' #' . $itemsId;
+            $subject = '📡 Auditoría Wi-Fi: ' . $assetTitle;
+
+            $lines = [
+                '🔐 SONGA | AUDITORÍA WI-FI',
+                '📌 Evento: ' . $eventKey,
+                '🖥️ Activo: ' . $assetTitle,
+                '🗂️ Tipo: ' . $assetLabel . ' (#' . $itemsId . ')',
+            ];
+
+            if ($serial !== '') {
+                $lines[] = '🔢 Serie: ' . $serial;
+            }
+            $inventory = trim((string) ($asset['otherserial'] ?? ''));
+            if ($inventory !== '') {
+                $lines[] = '🏷️ Activo fijo: ' . $inventory;
+            }
+            if ($fieldName !== '') {
+                $lines[] = 'Campo: ' . $fieldName;
+            }
+            if ($oldValue !== null || $newValue !== null) {
+                $lines[] = '⬅️ Anterior: ' . self::formatValue($oldValue);
+                $lines[] = '➡️ Nuevo: ' . self::formatValue($newValue);
+            }
+            if ($details !== []) {
+                $displayDetails = $details;
+                unset($displayDetails['asset']);
+                if ($displayDetails !== []) {
+                    $lines[] = 'ℹ️ Detalle: ' . self::formatValue($displayDetails);
+                }
+            }
+            $lines[] = 'Registro: #' . $eventId;
+
+            $result = $service::enqueue([
                 'source' => 'auditoriawifi',
                 'event' => $eventKey,
                 'subject' => $subject,
-                'message' => implode("\n", $lines),
+                'message' => implode("\\n", $lines),
                 'deduplication_key' => 'auditoriawifi:' . $eventId,
             ]);
-        } catch (\Throwable $e) {
+
+            // An empty subscription match is a configuration issue, not a GLPI failure.
+            if (($result['queued'] ?? 0) === 0
+                && ($result['skipped'] ?? 0) === 0
+                && !empty($result['errors'])
+                && class_exists('Toolbox')
+            ) {
+                \\Toolbox::logError(
+                    'Auditoria WiFi: FML Telegram did not queue notification',
+                    implode('; ', $result['errors'])
+                );
+            }
+        } catch (\\Throwable $e) {
             // Notification delivery must never interrupt GLPI operations.
             if (class_exists('Toolbox')) {
-                \Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
+                \\Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
             }
         }
     }
