@@ -37,10 +37,10 @@ function plugin_init_auditoriawifi(): void
     if (class_exists('PluginFieldsContainer')) {
         foreach (AssetRegistry::getItemtypes() as $itemtype) {
             try {
-                $fieldsClass = \\PluginFieldsContainer::getClassname($itemtype, 'wifi');
+                $fieldsClass = \PluginFieldsContainer::getClassname($itemtype, 'wifi');
                 $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'preFieldsWifiUpdate'];
                 $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'postFieldsWifiUpdate'];
-            } catch (\\Throwable $e) {
+            } catch (\Throwable $e) {
                 // A given asset type may not have a generated wifi container.
             }
         }
