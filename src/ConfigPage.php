@@ -21,7 +21,7 @@ final class ConfigPage extends CommonGLPI
     {
         return [
             'title' => self::getMenuName(),
-            'page' => '/plugins/auditoriawifi/front/alerts.php',
+            'page' => '/plugins/auditoriawifi/front/config.php',
             'icon' => 'ti ti-shield-lock',
             'options' => [
                 'alerts' => [
