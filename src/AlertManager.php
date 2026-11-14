@@ -41,6 +41,24 @@ final class AlertManager
             : [];
     }
 
+    public static function saveAuditEnabled(string $itemtype, bool $enabled): void
+    {
+        global $DB;
+
+        if (!AssetRegistry::isSupported($itemtype)) {
+            return;
+        }
+
+        // Mobile is a mandatory RADIUS asset and must remain audited.
+        if ($itemtype === self::MOBILE) {
+            $enabled = true;
+        }
+
+        $DB->update('glpi_plugin_auditoriawifi_configs', [
+            'is_enabled' => $enabled ? 1 : 0,
+        ], ['itemtype' => $itemtype]);
+    }
+
     /** @return string[] */
     public static function getSelectedEvents(string $itemtype): array
     {
