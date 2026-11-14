@@ -6,10 +6,11 @@ use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
 use GlpiPlugin\Auditoriawifi\ConfigPage;
 
-define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.6');
+define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.7');
 
 require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
+require_once __DIR__ . '/src/AlertManager.php';
 require_once __DIR__ . '/src/AssetSnapshot.php';
 require_once __DIR__ . '/src/EventObserver.php';
 require_once __DIR__ . '/src/ConfigPage.php';
