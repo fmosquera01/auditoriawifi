@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use GlpiPlugin\\Auditoriawifi\\AssetRegistry;
+use GlpiPlugin\Auditoriawifi\AssetRegistry;
 
 include('../../../inc/includes.php');
 
