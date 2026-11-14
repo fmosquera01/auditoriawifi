@@ -229,22 +229,6 @@ final class EventObserver
 
 
     /**
-     * Capture a first Fields wifi-container row for an existing asset.
-     */
-    public static function preFieldsWifiAdd(CommonDBTM $item): void
-    {
-        $itemsId = (int) ($item->input['items_id'] ?? $item->fields['items_id'] ?? 0);
-        if ($itemsId <= 0) {
-            return;
-        }
-
-        self::$before[self::key($item::class, -$itemsId)] = [
-            'items_id' => $itemsId,
-            'dropdown_id' => 0,
-        ];
-    }
-
-    /**
      * Record the first SSID assignment after Fields creates its container row.
      */
     public static function postFieldsWifiAdd(CommonDBTM $item): void
