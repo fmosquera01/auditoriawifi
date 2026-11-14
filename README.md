@@ -36,7 +36,7 @@ La integración con Fields observa el contenedor `wifi` para capturar los valore
 
 ## Configuración de alertas
 
-En el panel de Auditoría WiFi se pueden seleccionar los eventos que deben notificarse para cada tipo de activo. Desmarcar una notificación no elimina ni desactiva el registro histórico.
+En el panel de Auditoría WiFi se puede activar o desactivar la auditoría por tipo de activo y seleccionar los eventos que deben notificarse. Desmarcar una notificación no elimina ni desactiva el registro histórico. Mobile permanece siempre auditado.
 
 **Regla obligatoria de Mobile:** los eventos `asset.created` y `asset.name.changed` siempre notifican y no pueden desactivarse desde el panel. Los demás eventos de Mobile, incluidos MAC y Wi-Fi, se pueden seleccionar individualmente.
 
