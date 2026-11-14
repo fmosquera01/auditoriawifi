@@ -43,6 +43,22 @@ final class AuditRepository
         }
 
         try {
+            // Preserve the asset identity as it existed when the event was recorded.
+            // This keeps name/serial visible even if the asset is renamed or deleted later.
+            try {
+                $snapshot = AssetSnapshot::capture($itemtype, $itemsId);
+                $asset = $snapshot['asset'] ?? [];
+                if ($asset !== []) {
+                    $details['asset'] = [
+                        'name' => (string) ($asset['name'] ?? ''),
+                        'serial' => (string) ($asset['serial'] ?? ''),
+                        'otherserial' => (string) ($asset['otherserial'] ?? ''),
+                    ];
+                }
+            } catch (Throwable $snapshotError) {
+                // Snapshot enrichment is optional; never prevent event persistence.
+            }
+
             $userId = class_exists('Session') ? (int) \Session::getLoginUserID() : 0;
             $eventId = (int) $DB->insert('glpi_plugin_auditoriawifi_events', [
                 'event_key' => $eventKey,
