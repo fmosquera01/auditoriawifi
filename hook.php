@@ -49,7 +49,7 @@ function plugin_auditoriawifi_install(): bool
 
     $migration->executeMigration();
 
-    foreach (\GlpiPlugin\Auditoriawifi\AssetRegistry::getItemtypes() as $itemtype) {
+    foreach (\\GlpiPlugin\\Auditoriawifi\\AssetRegistry::getItemtypes() as $itemtype) {
         $existing = $DB->request([
             'COUNT' => 'c',
             'FROM' => 'glpi_plugin_auditoriawifi_configs',
@@ -65,6 +65,15 @@ function plugin_auditoriawifi_install(): bool
     }
 
     return true;
+}
+
+/**
+ * Run the idempotent installer when upgrading.
+ * Existing event history and alert selections are preserved.
+ */
+function plugin_auditoriawifi_upgrade(string $oldVersion): bool
+{
+    return plugin_auditoriawifi_install();
 }
 
 /** Keep the audit history when the plugin is uninstalled. */
