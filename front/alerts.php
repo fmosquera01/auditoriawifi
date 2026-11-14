@@ -9,7 +9,7 @@ include('../../../inc/includes.php');
 Session::checkRight('config', READ);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-Html::header(__('Eventos', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins', ConfigPage::class, 'events');
+Html::header(__('Eventos', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
 
 echo "<div class='container-fluid'>";
 echo "<h2><i class='ti ti-bell'></i> " . $escape(__('Visualizar alertas', 'auditoriawifi')) . "</h2>";
