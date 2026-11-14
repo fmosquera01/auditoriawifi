@@ -128,7 +128,7 @@ final class AlertManager
         array $details = []
     ): void {
         if (
-            !class_exists(\\GlpiPlugin\\Telegram\\NotificationService::class)
+            !class_exists(\GlpiPlugin\\Telegram\\NotificationService::class)
             || !self::shouldNotify($itemtype, $eventKey)
         ) {
             return;
@@ -155,17 +155,17 @@ final class AlertManager
         $lines[] = '🆔 <b>Registro:</b> #' . $eventId;
 
         try {
-            \\GlpiPlugin\\Telegram\\NotificationService::enqueue([
+            \GlpiPlugin\\Telegram\\NotificationService::enqueue([
                 'source' => 'auditoriawifi',
                 'event' => $eventKey,
                 'subject' => $subject,
                 'message' => implode("\n", $lines),
                 'deduplication_key' => 'auditoriawifi:' . $eventId,
             ]);
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             // Notification delivery must never interrupt GLPI operations.
             if (class_exists('Toolbox')) {
-                \\Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
+                \Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
             }
         }
     }
