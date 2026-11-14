@@ -6,8 +6,8 @@ Session::checkLoginUser();
 
 Html::header(__('Auditoría WiFi', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
 
-$canConfigure = Session::haveRight('plugin_auditoriawifi_config', UPDATE);
-$canViewEvents = Session::haveRight('plugin_auditoriawifi_events', READ);
+$canConfigure = Session::haveRight('auditoriawifi:config', UPDATE);
+$canViewEvents = Session::haveRight('auditoriawifi:events', READ);
 ?>
 <style>
 .aw-home{max-width:900px;margin:1.25rem auto}
