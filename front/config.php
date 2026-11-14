@@ -8,7 +8,7 @@ use GlpiPlugin\Auditoriawifi\ConfigPage;
 
 include('../../../inc/includes.php');
 
-Session::checkRight('plugin_auditoriawifi_config', UPDATE);
+Session::checkRight('auditoriawifi:config', UPDATE);
 $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['save_alerts'])) {
