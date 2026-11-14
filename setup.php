@@ -6,7 +6,7 @@ use GlpiPlugin\Auditoriawifi\AssetRegistry;
 use GlpiPlugin\Auditoriawifi\EventObserver;
 use GlpiPlugin\Auditoriawifi\ConfigPage;
 
-define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.3');
+define('PLUGIN_AUDITORIAWIFI_VERSION', '0.1.4');
 
 require_once __DIR__ . '/src/AssetRegistry.php';
 require_once __DIR__ . '/src/AuditRepository.php';
@@ -30,6 +30,20 @@ function plugin_init_auditoriawifi(): void
         $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi'][$itemtype] = [EventObserver::class, 'postAssetUpdate'];
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_DELETE]['auditoriawifi'][$itemtype] = [EventObserver::class, 'preAssetDelete'];
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_PURGE]['auditoriawifi'][$itemtype] = [EventObserver::class, 'preAssetPurge'];
+    }
+
+    // Fields stores each container in a generated class/table. Observe the
+    // wifi container itself so SSID changes are captured at the real write.
+    if (class_exists('PluginFieldsContainer')) {
+        foreach (AssetRegistry::getItemtypes() as $itemtype) {
+            try {
+                $fieldsClass = \\PluginFieldsContainer::getClassname($itemtype, 'wifi');
+                $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'preFieldsWifiUpdate'];
+                $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['auditoriawifi'][$fieldsClass] = [EventObserver::class, 'postFieldsWifiUpdate'];
+            } catch (\\Throwable $e) {
+                // A given asset type may not have a generated wifi container.
+            }
+        }
     }
 
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['auditoriawifi']['PluginFieldsSsidfielddropdown'] = [EventObserver::class, 'preSsidDropdownUpdate'];
