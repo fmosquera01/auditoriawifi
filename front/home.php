@@ -6,8 +6,8 @@ Session::checkLoginUser();
 
 Html::header(__('Auditoría WiFi', 'auditoriawifi'), $_SERVER['PHP_SELF'], 'plugins');
 
-$canConfigure = Session::haveRight('config', UPDATE);
-$canViewEvents = Session::haveRight('config', READ);
+$canConfigure = Session::haveRight('plugin_auditoriawifi_config', UPDATE);
+$canViewEvents = Session::haveRight('plugin_auditoriawifi_events', READ);
 ?>
 <style>
 .aw-home{max-width:900px;margin:1.25rem auto}
@@ -25,6 +25,7 @@ $canViewEvents = Session::haveRight('config', READ);
 @media(max-width:576px){.aw-home-grid{grid-template-columns:1fr}.aw-home-card{min-height:0}}
 </style>
 <div class="container-fluid aw-home">
+<nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/front/central.php"><?= htmlspecialchars(__('Inicio'), ENT_QUOTES, 'UTF-8') ?></a></li><li class="breadcrumb-item">Complementos</li><li class="breadcrumb-item active" aria-current="page"><?= htmlspecialchars(__('Auditoría WiFi', 'auditoriawifi'), ENT_QUOTES, 'UTF-8') ?></li></ol></nav>
 <h2 class="h3 mb-1"><?= htmlspecialchars(__('Auditoría WiFi', 'auditoriawifi'), ENT_QUOTES, 'UTF-8') ?></h2>
 <p class="aw-home-intro"><?= htmlspecialchars(__('Seleccione la opción que desea utilizar.', 'auditoriawifi'), ENT_QUOTES, 'UTF-8') ?></p>
 <div class="aw-home-grid">
