@@ -125,8 +125,8 @@ final class AssetSnapshot
 
 
     /**
-     * Resolve the Fields-generated table for the wifi container of any
-     * native or Asset Definition itemtype.
+     * Resolve the Fields-generated table only for the RADIUS-enabled asset types
+     * registered in AssetRegistry.
      */
     public static function getWifiFieldsTable(string $itemtype): ?string
     {
