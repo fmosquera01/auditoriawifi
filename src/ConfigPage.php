@@ -21,12 +21,18 @@ final class ConfigPage extends CommonGLPI
     {
         return [
             'title' => self::getMenuName(),
-            'page' => '/plugins/auditoriawifi/front/config.php',
+            'page' => '/plugins/auditoriawifi/front/alerts.php',
             'icon' => 'ti ti-shield-lock',
             'options' => [
+                'alerts' => [
+                    'title' => __('Visualizar alertas', 'auditoriawifi'),
+                    'page' => '/plugins/auditoriawifi/front/alerts.php',
+                    'icon' => 'ti ti-bell',
+                ],
                 'config' => [
-                    'title' => __('Configuración', 'auditoriawifi'),
+                    'title' => __('Parámetros', 'auditoriawifi'),
                     'page' => '/plugins/auditoriawifi/front/config.php',
+                    'icon' => 'ti ti-settings',
                 ],
             ],
         ];
