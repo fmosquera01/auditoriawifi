@@ -212,18 +212,15 @@ final class AlertManager
             if (($result['queued'] ?? 0) === 0
                 && ($result['skipped'] ?? 0) === 0
                 && !empty($result['errors'])
-                && class_exists('Toolbox')
             ) {
-                \Toolbox::logError(
-                    'Auditoria WiFi: FML Telegram did not queue notification',
-                    implode('; ', $result['errors'])
+                error_log(
+                    '[Auditoria WiFi] FML Telegram did not queue notification: '
+                    . implode('; ', $result['errors'])
                 );
             }
         } catch (\Throwable $e) {
             // Notification delivery must never interrupt GLPI operations.
-            if (class_exists('Toolbox')) {
-                \Toolbox::logError('Auditoria WiFi: FML Telegram enqueue failed', $e->getMessage());
-            }
+            error_log('[Auditoria WiFi] FML Telegram enqueue failed: ' . $e->getMessage());
         }
     }
 
