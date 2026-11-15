@@ -165,39 +165,36 @@ final class AlertManager
             $assetLabel = AssetRegistry::getAssets()[$itemtype] ?? $itemtype;
             $asset = is_array($details['asset'] ?? null) ? $details['asset'] : [];
             $assetName = trim((string) ($asset['name'] ?? ''));
-            $serial = trim((string) ($asset['serial'] ?? ''));
             $assetTitle = $assetName !== '' ? $assetName : $assetLabel . ' #' . $itemsId;
-            $subject = '📡 Auditoría Wi-Fi: ' . $assetTitle;
+            $actor = self::getActorName();
+            $fieldLabel = self::getFieldLabel($fieldName);
+            $eventLabel = self::getEventLabel($eventKey);
+            $subject = '📡 Auditoría Wi-Fi | ' . $assetTitle;
 
             $lines = [
-                '<b>🔐 SONGA | AUDITORÍA WI-FI</b>',
+                '<b>📡 AUDITORÍA WI-FI</b>',
+                '<i>SONGA · SEGURIDAD DE RED</i>',
+                '',
+                '<b>👤 Usuario:</b> ' . $html($actor),
                 '<b>📌 Evento:</b> <code>' . $html($eventKey) . '</code>',
                 '<b>🖥️ Activo:</b> ' . $html($assetTitle),
                 '<b>🗂️ Tipo:</b> ' . $html($assetLabel) . ' (#' . $itemsId . ')',
             ];
 
-            if ($serial !== '') {
-                $lines[] = '<b>🔢 Serie:</b> ' . $html($serial);
+            if ($fieldLabel !== '') {
+                $lines[] = '<b>Campo:</b> ' . $html($fieldLabel);
             }
-            $inventory = trim((string) ($asset['otherserial'] ?? ''));
-            if ($inventory !== '') {
-                $lines[] = '<b>🏷️ Activo fijo:</b> ' . $html($inventory);
-            }
-            if ($fieldName !== '') {
-                $lines[] = '<b>Campo:</b> ' . $html($fieldName);
-            }
+
             if ($oldValue !== null || $newValue !== null) {
-                $lines[] = '<b>⬅️ Anterior:</b> ' . $html(self::formatValue($oldValue));
-                $lines[] = '<b>➡️ Nuevo:</b> ' . $html(self::formatValue($newValue));
+                $lines[] = '';
+                $lines[] = '<b>🔄 ' . $html($eventLabel) . '</b>';
+                $lines[] = '🟥 <b>Anterior:</b> <code>' . $html(self::formatValue($oldValue)) . '</code>';
+                $lines[] = '🟩 <b>Nuevo:</b> <code>' . $html(self::formatValue($newValue)) . '</code>';
             }
-            if ($details !== []) {
-                $displayDetails = $details;
-                unset($displayDetails['asset']);
-                if ($displayDetails !== []) {
-                    $lines[] = '<b>ℹ️ Detalle:</b> <code>' . $html(self::formatValue($displayDetails)) . '</code>';
-                }
-            }
-            $lines[] = '<b>Registro:</b> #' . $eventId;
+
+            $lines[] = '';
+            $lines[] = '━━━━━━━━━━━━━━━━━━';
+            $lines[] = '<i>🛡️ GLPI · Auditoría Wi-Fi | Songa IT</i>';
 
             $result = $service::enqueue([
                 'source' => 'auditoriawifi',
@@ -233,19 +230,85 @@ final class AlertManager
         return in_array($eventKey, self::getSelectedEvents($itemtype), true);
     }
 
+    private static function getActorName(): string
+    {
+        global $DB;
+
+        try {
+            $userId = class_exists('Session') ? (int) \\Session::getLoginUserID() : 0;
+            if ($userId <= 0) {
+                return 'Proceso automático';
+            }
+
+            $user = $DB->request([
+                'SELECT' => ['name', 'firstname', 'realname'],
+                'FROM' => 'glpi_users',
+                'WHERE' => ['id' => $userId],
+                'LIMIT' => 1,
+            ])->current();
+
+            if (!$user) {
+                return 'Usuario GLPI #' . $userId;
+            }
+
+            $displayName = trim((string) ($user['firstname'] ?? '') . ' ' . (string) ($user['realname'] ?? ''));
+            return $displayName !== '' ? $displayName : (string) ($user['name'] ?? 'Usuario GLPI #' . $userId);
+        } catch (\\Throwable $e) {
+            return 'Usuario GLPI';
+        }
+    }
+
+    private static function getFieldLabel(string $fieldName): string
+    {
+        return match ($fieldName) {
+            'ssid' => 'SSID',
+            'mac' => 'Dirección MAC',
+            'vlan', 'radius_value' => 'Atributo RADIUS',
+            'port', 'networkport' => 'Puerto de red',
+            'asset', 'name' => 'Nombre del activo',
+            default => $fieldName,
+        };
+    }
+
+    private static function getEventLabel(string $eventKey): string
+    {
+        foreach (self::getEventCatalog() as $events) {
+            if (isset($events[$eventKey])) {
+                return $events[$eventKey];
+            }
+        }
+
+        return 'Cambio detectado';
+    }
+
     private static function formatValue(mixed $value): string
     {
         if ($value === null || $value === '') {
-            return '(vacío)';
+            return 'Sin asignar';
         }
 
         if (is_array($value) || is_object($value)) {
-            $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $data = (array) $value;
+            foreach (['completename', 'name', 'mac', 'value'] as $key) {
+                if (isset($data[$key]) && trim((string) $data[$key]) !== '') {
+                    $value = $data[$key];
+                    break;
+                }
+            }
+
+            if (is_array($value) || is_object($value)) {
+                if (isset($data['itemtype'], $data['items_id'])) {
+                    $type = AssetRegistry::getAssets()[(string) $data['itemtype']] ?? (string) $data['itemtype'];
+                    $value = $type . ' #' . (int) $data['items_id'];
+                } else {
+                    $value = 'Cambio registrado';
+                }
+            }
         }
 
         $text = trim((string) $value);
-        if (strlen($text) > 1200) {
-            $text = substr($text, 0, 1197) . '...';
+        if (strlen($text) > 300) {
+            $text = substr($text, 0, 297) . '...';
         }
 
         return $text;
