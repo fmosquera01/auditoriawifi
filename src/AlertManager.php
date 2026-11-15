@@ -235,7 +235,7 @@ final class AlertManager
         global $DB;
 
         try {
-            $userId = class_exists('Session') ? (int) \\Session::getLoginUserID() : 0;
+            $userId = class_exists('Session') ? (int) \Session::getLoginUserID() : 0;
             if ($userId <= 0) {
                 return 'Proceso automático';
             }
@@ -253,7 +253,7 @@ final class AlertManager
 
             $displayName = trim((string) ($user['firstname'] ?? '') . ' ' . (string) ($user['realname'] ?? ''));
             return $displayName !== '' ? $displayName : (string) ($user['name'] ?? 'Usuario GLPI #' . $userId);
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             return 'Usuario GLPI';
         }
     }
