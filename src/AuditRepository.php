@@ -60,7 +60,7 @@ final class AuditRepository
             }
 
             $userId = class_exists('Session') ? (int) \Session::getLoginUserID() : 0;
-            $eventId = (int) $DB->insert('glpi_plugin_auditoriawifi_events', [
+            $inserted = $DB->insert('glpi_plugin_auditoriawifi_events', [
                 'event_key' => $eventKey,
                 'itemtype' => $itemtype,
                 'items_id' => $itemsId,
@@ -72,6 +72,10 @@ final class AuditRepository
                 'details_json' => json_encode($details, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'users_id' => $userId,
             ]);
+
+            // GLPI DB::insert() returns a success flag, not the generated row ID.
+            // Retrieve the actual AUTO_INCREMENT value for the notification key.
+            $eventId = $inserted ? (int) $DB->insertId() : 0;
 
             if ($eventId > 0) {
                 AlertManager::dispatch(
