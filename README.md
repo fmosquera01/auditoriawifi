@@ -6,7 +6,7 @@ Plugin de auditoría para GLPI 11 orientado a la trazabilidad de activos que par
 - **Identificador:** `auditoriawifi`
 - **Repositorio:** https://github.com/fmosquera01/auditoriawifi
 - **Rama de desarrollo:** `main`
-- **Versión actual:** 0.1.7
+- **Versión actual:** 0.1.24
 - **Dependencia de notificaciones:** FML Telegram (`telegram`)
 
 ## Activos incluidos
@@ -48,13 +48,9 @@ Las notificaciones se encolan mediante la API pública:
 
 El plugin no almacena tokens ni realiza llamadas HTTP directas a Telegram. FML Telegram procesa la cola mediante su tarea cron.
 
-Para recibir un evento, configura en FML Telegram una suscripción con:
+Para recibir todos los eventos, configura en FML Telegram una única suscripción con **Origen** `auditoriawifi`, **Evento** `*` y el destino deseado. La selección de alertas de este plugin determina qué eventos se notifican.
 
-- **Origen:** `auditoriawifi`
-- **Evento:** la clave exacta, por ejemplo `wifi.ssid.changed`
-- **Destino:** el chat o alias que debe recibirlo.
-
-Se debe crear una suscripción por cada evento que se quiera recibir. Si no existe una suscripción/destino activo, FML Telegram no encolará una entrega. El fallo de notificación nunca debe interrumpir la operación de GLPI.
+Los mensajes usan HTML compatible con Telegram y muestran el usuario que realizó el cambio, el activo, el tipo y los valores anterior/nuevo en formato legible. Los detalles internos de Fields y los datos JSON se conservan en el historial GLPI, no se incluyen en el mensaje de Telegram. El fallo de notificación nunca debe interrumpir la operación de GLPI.
 
 ## Persistencia
 
